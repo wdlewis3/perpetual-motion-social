@@ -1,0 +1,9 @@
+# Instagram post log
+
+One entry per run, newest at the bottom. The routine reads the last entry to pick the next topic and format.
+
+Topics cycle: (1) practical health coaching tip → (2) strength and movement → (3) sustainable habits → (4) Will's coaching approach → (5) veteran / active-duty / first-responder support.
+Formats cycle: (a) single-image caption post → (b) carousel → (c) Reel script.
+
+- 2026-09-27 | Topic 1, practical health coaching tip | Format (a), single-image caption post | Hook: "If your sleep feels unpredictable, start with the one part of it you can actually control: when you get up." | Angle: steady wake-up time seven days a week, daylight after, judge it after two weeks | Hosting: n/a (pre-repo test) | Metricool: skipped
+- 2026-09-27 | Topic 2, strength and movement | Format (b), carousel, 7 slides | Hook: "You don't need a better program. You need one you'll keep doing." | Angle: consistency beats program choice; start light, 2–3 sessions a week, big movements, slow loading, fit the program to your life | Hosting: n/a (pre-repo test) | Metricool: skipped
