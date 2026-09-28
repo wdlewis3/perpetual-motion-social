@@ -16,6 +16,10 @@ spec.json:
   ]
 }
 
+Optional "background": "backgrounds/topo-lines.jpg" at the top level (all slides)
+or inside a slide (that slide only) puts the text over a photo/texture, muted and
+darkened for legibility. Omit it for the plain dark card.
+
 Output: 1080x1350 JPEGs (4:5 portrait, Instagram feed max height) named
 <slug>-01.jpg, <slug>-02.jpg ... plus <slug>-cover.jpg (1080x1920) for Reels
 when the spec has "reel_cover": {"headline": "..."}.
@@ -70,7 +74,39 @@ def wrap(draw, text, fnt, max_w):
     if cur: lines.append(cur)
     return lines
 
-def background(W, H):
+def photo_background(path, W, H):
+    """Cover-fit an image, desaturate and darken it, add a left-to-right and
+    bottom-up dark gradient so the type stays readable, and tint toward brand."""
+    src = Image.open(path).convert("RGB")
+    scale = max(W / src.width, H / src.height)
+    src = src.resize((int(src.width * scale) + 1, int(src.height * scale) + 1), Image.LANCZOS)
+    left = (src.width - W) // 2; top = (src.height - H) // 2
+    img = src.crop((left, top, left + W, top + H))
+    # mute: partial desaturate, then darken. Already-dark textures need much
+    # less of both or they vanish; bright photos need the full treatment.
+    lum = sum(img.convert("L").resize((64, 80)).getdata()) / (64 * 80)
+    strong = lum > 70
+    gray = img.convert("L").convert("RGB")
+    img = Image.blend(img, gray, 0.35 if strong else 0.0)
+    img = Image.blend(img, Image.new("RGB", (W, H), BG), 0.55 if strong else 0.05)
+    if not strong:
+        # lift the texture slightly so it reads on phones
+        img = Image.blend(img, Image.new("RGB", (W, H), (60, 48, 78)), 0.12)
+    # gradient overlay: dark on the left/bottom where the text sits
+    overlay = Image.new("L", (W, H), 0)
+    od = ImageDraw.Draw(overlay)
+    for x in range(W):
+        od.line([(x, 0), (x, H)], fill=int(200 * max(0, 1 - x / (W * 0.85))))
+    for y in range(H):
+        a = int(150 * max(0, (y - H * 0.55) / (H * 0.45)))
+        od.line([(0, y), (W, y)], fill=a) if a > 0 else None
+    dark = Image.new("RGB", (W, H), BG)
+    img = Image.composite(dark, img, overlay.point(lambda v: min(255, int(v * (0.9 if strong else 0.55)))))
+    return img
+
+def background(W, H, image=None):
+    if image:
+        return photo_background(image, W, H)
     img = Image.new("RGB", (W, H), BG)
     # soft purple glow, bottom-right, blurred so it reads as depth not decoration
     glow = Image.new("RGB", (W, H), BG)
@@ -93,8 +129,8 @@ def fit_headline(draw, text, max_w, max_h, start=88, floor=54):
     f = font("bold", floor)
     return f, wrap(draw, text, f, max_w), int(floor * 1.12)
 
-def render_slide(slide, idx, total, W=1080, H=1350):
-    img = background(W, H)
+def render_slide(slide, idx, total, W=1080, H=1350, bg_image=None):
+    img = background(W, H, slide.get("background", bg_image))
     d = ImageDraw.Draw(img)
     M = 96                       # margin
     max_w = W - 2*M
@@ -141,7 +177,7 @@ def render_slide(slide, idx, total, W=1080, H=1350):
     return img
 
 def render_cover(spec, W=1080, H=1920):
-    img = background(W, H)
+    img = background(W, H, spec.get("background"))
     d = ImageDraw.Draw(img)
     M = 100
     y = 640
@@ -180,7 +216,7 @@ def main():
     written = []
     for i, s in enumerate(slides, 1):
         p = os.path.join(out, f"{slug}-{i:02d}.{ext}")
-        save(render_slide(s, i, len(slides)), p, compact)
+        save(render_slide(s, i, len(slides), bg_image=spec.get("background")), p, compact)
         written.append(p)
     if spec.get("reel_cover"):
         p = os.path.join(out, f"{slug}-cover.{ext}")
