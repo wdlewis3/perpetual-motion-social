@@ -6,4 +6,4 @@ Will: add, remove, or reorder freely. Never listed as a "partner" unless you wri
 
 Heroic Hearts Project | https://heroicheartsproject.org | | Veteran-focused; verify details on site
 Task Force Dagger Foundation | https://taskforcedagger.org | | Special-operations veterans and families; verify details on site
-Carolinas for Care | | | North Carolina; verify name, site, and mission before posting
+Carolinas for Care | https://carolinasforcare.org | | Non-Profit expanding access and education psychedelic-assisted therapy; verify name, site, and mission before posting
