@@ -27,13 +27,28 @@ PERPETUAL MOTION wordmark. No icons, no photos, no clutter.
 import json, os, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-FONT_DIR = "/usr/share/fonts/truetype/google-fonts"
-FONTS = {
-    "bold": os.path.join(FONT_DIR, "Poppins-Bold.ttf"),
-    "medium": os.path.join(FONT_DIR, "Poppins-Medium.ttf"),
-    "regular": os.path.join(FONT_DIR, "Poppins-Regular.ttf"),
-    "light": os.path.join(FONT_DIR, "Poppins-Light.ttf"),
-}
+HERE = os.path.dirname(os.path.abspath(__file__))
+FONT_FILES = {"bold": "Poppins-Bold.ttf", "medium": "Poppins-Medium.ttf",
+              "regular": "Poppins-Regular.ttf", "light": "Poppins-Light.ttf"}
+FONT_URL = "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/"
+
+def _find_fonts():
+    """Look for Poppins in ./fonts (committed to the repo), then the system;
+    if neither has it, download into ./fonts so the files get committed."""
+    local = os.path.join(HERE, "fonts")
+    for d in (local, "/usr/share/fonts/truetype/google-fonts"):
+        if all(os.path.exists(os.path.join(d, f)) for f in FONT_FILES.values()):
+            return d
+    os.makedirs(local, exist_ok=True)
+    import urllib.request
+    for f in FONT_FILES.values():
+        p = os.path.join(local, f)
+        if not os.path.exists(p):
+            urllib.request.urlretrieve(FONT_URL + f, p)
+    return local
+
+FONT_DIR = _find_fonts()
+FONTS = {k: os.path.join(FONT_DIR, v) for k, v in FONT_FILES.items()}
 BG = (13, 12, 18)
 INK = (242, 240, 246)
 MUTED = (168, 164, 180)
